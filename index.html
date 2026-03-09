@@ -13,27 +13,32 @@ font-family:Arial;
 background:#0f172a;
 color:white;
 display:flex;
-justify-content:center;
-align-items:center;
 height:100vh;
 }
 
-#app{
-width:700px;
-height:90vh;
-background:#1e293b;
-border-radius:12px;
-display:flex;
-flex-direction:column;
-overflow:hidden;
+#sidebar{
+width:260px;
+background:#020617;
+padding:20px;
 }
 
-#header{
-padding:15px;
-background:#111827;
-font-size:20px;
-font-weight:bold;
-text-align:center;
+#sidebar h2{
+font-size:18px;
+margin-bottom:20px;
+}
+
+select,input{
+width:100%;
+padding:10px;
+margin-bottom:15px;
+border:none;
+border-radius:6px;
+}
+
+#main{
+flex:1;
+display:flex;
+flex-direction:column;
 }
 
 #chat{
@@ -44,24 +49,24 @@ overflow-y:auto;
 
 .message{
 margin-bottom:15px;
-padding:10px 15px;
-border-radius:10px;
-max-width:80%;
+padding:12px;
+border-radius:8px;
+max-width:60%;
 }
 
 .user{
 background:#2563eb;
-align-self:flex-end;
+margin-left:auto;
 }
 
 .ai{
-background:#374151;
+background:#1e293b;
 }
 
 #inputArea{
 display:flex;
 padding:15px;
-background:#111827;
+background:#020617;
 }
 
 #question{
@@ -69,15 +74,14 @@ flex:1;
 padding:10px;
 border:none;
 border-radius:6px;
-font-size:16px;
 }
 
 button{
 margin-left:10px;
 padding:10px 20px;
-border:none;
 background:#2563eb;
 color:white;
+border:none;
 border-radius:6px;
 cursor:pointer;
 }
@@ -88,17 +92,28 @@ cursor:pointer;
 
 <body>
 
-<div id="app">
+<div id="sidebar">
 
-<div id="header">
-AI Study Tutor
+<h2>⚙ Settings</h2>
+
+<input id="apiKey" placeholder="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">
+
+<select id="model">
+<option value="mistralai/mistral-7b-instruct">Mistral 7B</option>
+<option value="meta-llama/llama-3-8b-instruct">Llama 3</option>
+<option value="openchat/openchat-7b">OpenChat</option>
+<option value="nousresearch/nous-hermes-2-mixtral">Hermes Mixtral</option>
+</select>
+
 </div>
+
+<div id="main">
 
 <div id="chat"></div>
 
 <div id="inputArea">
 
-<input id="question" placeholder="Ask anything about accounting or math...">
+<input id="question" placeholder="Ask accounting or math question">
 
 <button onclick="ask()">Send</button>
 
@@ -108,16 +123,17 @@ AI Study Tutor
 
 <script>
 
-const API_KEY = "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"
-
-let messages = [
+let messages=[
 {
 role:"system",
-content:"You are a professional tutor helping students learn accounting and math clearly."
+content:"You are a helpful tutor for accounting and math."
 }
 ]
 
 async function ask(){
+
+let apiKey=document.getElementById("apiKey").value
+let model=document.getElementById("model").value
 
 let input=document.getElementById("question")
 let question=input.value
@@ -126,23 +142,23 @@ if(question==="") return
 
 let chat=document.getElementById("chat")
 
-chat.innerHTML += `<div class="message user"><b>You:</b> ${question}</div>`
+chat.innerHTML+=`<div class="message user">${question}</div>`
 
 messages.push({role:"user",content:question})
 
 input.value=""
 
-let response = await fetch("https://openrouter.ai/api/v1/chat/completions",{
+let response=await fetch("https://openrouter.ai/api/v1/chat/completions",{
 
 method:"POST",
 
 headers:{
-"Authorization":"Bearer "+API_KEY,
+"Authorization":"Bearer "+apiKey,
 "Content-Type":"application/json"
 },
 
 body:JSON.stringify({
-model:"mistralai/mistral-7b-instruct",
+model:model,
 messages:messages
 })
 
@@ -154,9 +170,9 @@ let answer=data.choices[0].message.content
 
 messages.push({role:"assistant",content:answer})
 
-chat.innerHTML += `<div class="message ai"><b>AI:</b> ${answer}</div>`
+chat.innerHTML+=`<div class="message ai">${answer}</div>`
 
-chat.scrollTop = chat.scrollHeight
+chat.scrollTop=chat.scrollHeight
 
 }
 
